@@ -56,6 +56,19 @@ code
 Code
 ---
 ```
+nerateImage();
+Feuille de Route (Roadmap)
+
+Intégration de Fal.ai (fal-ai/...)
+
+Intégration de Mastra (mastra/...)
+
+Intégration de SingleStore (singlestore/...)
+
+Intégration de Transformers.js (Xenova) (transformers/...)
+Licence
+ISC
+
 ### 4. Fichier : `.gitignore`
 
 (Pour dire à Git d'ignorer les fichiers inutiles)
