@@ -1,6 +1,6 @@
 {
   "name": "@mauriciotukss2/mangrat-v2omini",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Un Méta-SDK pour interagir avec plusieurs fournisseurs d'IA via une interface unifiée.",
   "main": "index.js",
   "type": "module",
@@ -10,10 +10,13 @@
     "type": "git",
     "url": "https://github.com/Mauricio-100/Mangrat-v20mini.git"
   },
-  "bugs": {
-    "url": "https://github.com/Mauricio-100/Mangrat-v20mini/issues"
+  "publishConfig": {
+    "access": "public"
   },
-  "homepage": "https://github.com/Mauricio-100/Mangrat-v20mini#readme",
+  "files": [
+    "index.js",
+    "LICENSE"
+  ],
   "dependencies": {
     "@fal-ai/client": "^0.6.1",
     "@mastra/client-js": "^0.0.9",
