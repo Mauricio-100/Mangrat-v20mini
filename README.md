@@ -1,99 +1,68 @@
-# Mangrat V2Omini
+Mangrat V3 - SDK Universel IA
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/@mauriciotukss2/mangrat-v2omini"><img src="https://badge.fury.io/js/%40mauriciotukss2%2Fmangrat-v2omini.svg" alt="NPM Version"></a>
-</p>
+![Mangrat V3](https://img.shields.io/badge/Mangrat-V3-blue?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...) 
+![Fal.ai](https://img.shields.io/badge/Fal.ai-Client-orange?logo=robot)
+![Mastra](https://img.shields.io/badge/Mastra-Client-yellow?logo=data:image/png;base64,iVBOR...)
+![SingleStore](https://img.shields.io/badge/SingleStore-DB-red?logo=database)
+![Transformers.js](https://img.shields.io/badge/Transformers.js-Local-green?logo=code)
 
-Mangrat V2Omini est un Méta-SDK révolutionnaire conçu pour unifier l'accès à plusieurs fournisseurs d'IA. Utilisez une seule interface simple pour appeler des modèles de Fal.ai, Mastra, SingleStore et Transformers.js.
+Mangrat V3 est un SDK JavaScript/Node.js universel pour interagir avec **plusieurs fournisseurs d'IA**, avec mémoire, streaming et fallback local.
 
-## Le Problème
-Chaque service d'IA a sa propre bibliothèque, sa propre configuration et sa propre manière d'appeler les modèles. Apprendre à utiliser chacun d'entre eux est complexe et redondant.
+---
 
-## La Solution Mangrat
-Avec Mangrat V2Omini, vous configurez vos clés d'API une seule fois. Ensuite, vous appelez n'importe quel modèle via la méthode `.run()`, et la bibliothèque s'occupe du reste.
+## 🌐 Liens utiles
+
+- [Mangrat AI Client](https://www.npmjs.com/package/mangrat-ai-client)  
+- [Mangrat V2Omini](https://www.npmjs.com/package/@mauriciotukss2/mangrat-v2omini)  
+- [Env Guardian](https://www.npmjs.com/package/@mauriciotukss2/env-guardian)  
+- [Schema Forge](https://www.npmjs.com/package/@mauriciotukss2/schema-forge)
+
+---
 
 ## Installation
+
 ```bash
 npm install @mauriciotukss2/mangrat-v2omini
-```
-Utilisation (Exemple avec Fal.ai)
-code
-```bash
-JavaScript
-import MangratV2Omini from '@mauriciotukss2/mangrat-v2omini';
 
-// 1. Initialisez le client avec vos clés
-const client = new MangratV2Omini({
-  falKey: "VOTRE_CLE_API_FAL_AI"
+```
+
+
+### Configuration
+```bash
+import MangratV3 from '@mauriciotukss2/mangrat-v3';
+
+const client = new MangratV3({
+  falKey: 'VOTRE_CLE_FAL',
+  mastraKey: 'VOTRE_CLE_MASTRA',
+  singlestoreKey: 'VOTRE_CLE_SINGlestore'
 });
-
-// 2. Appelez n'importe quel modèle via .run()
-async function generateImage() {
-  try {
-    const output = await client.run('fal-ai/sdxl', {
-      prompt: "Un logo futuriste pour 'Mangrat V2Omini', style circuits neuronaux, bleu et violet"
-    });
-    console.log("Résultat du modèle :", output);
-  } catch (error) {
-    console.error(error.message);
-  }
-}
-
-generateImage();
-Feuille de Route (Roadmap)
-
-Intégration de Fal.ai (fal-ai/...)
-
-Intégration de Mastra (mastra/...)
-
-Intégration de SingleStore (singlestore/...)
-
-Intégration de Transformers.js (Xenova) (transformers/...)
-Licence
-ISC
-
-code
-Code
----
+Utilisation de base
+const result = await client.run('fal-ai/sdxl', { prompt: 'Crée un logo minimaliste' });
+console.log(result);
+Sessions et mémoire
+const session = client.session('user123');
+await session.chat('fal-ai/sdxl', 'Bonjour, présente-toi');
+console.log(session.history());
+Streaming en temps réel
+await session.chat('fal-ai/sdxl', 'Écris une histoire courte', {
+  stream: true,
+  onToken: token => process.stdout.write(token)
+});
+Multi-provider
+Préfixe	Provider	Badge
+fal-ai/	Fal.ai	
+mastra/	Mastra	
+singlestore/	SingleStore	
+local/	Transformers.js	
+Validation de sortie
+import { validateSchema } from '@mauriciotukss2/schema-forge';
+const output = await client.run('fal-ai/sdxl', { prompt: 'Génère un JSON utilisateur' });
+validateSchema(output, { type: 'object', properties: { name: { type: 'string' }, age: { type: 'number' } }, required: ['name','age'] });
 ```
-nerateImage();
-Feuille de Route (Roadmap)
+### Badges personnalisés Mangrat
 
-Intégration de Fal.ai (fal-ai/...)
 
-Intégration de Mastra (mastra/...)
-
-Intégration de SingleStore (singlestore/...)
-
-Intégration de Transformers.js (Xenova) (transformers/...)
-Licence
-ISC
-
-### 4. Fichier : `.gitignore`
-
-(Pour dire à Git d'ignorer les fichiers inutiles)
-Dépendances
-/node_modules
-
-Fichiers de log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-Fichiers d'environnement (pour les clés secrètes)
-```bash
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-Fichiers système
-.DS_Store
-```
-code
-Code
----
-
-### createur
-## Mauricio Mangituka (c) | 2025
+### Contribuer
+PRs et issues sont les bienvenues. Suivez le style ESM, testez vos changements, et mettez à jour le README si vous ajoutez un provider ou un module.
+### Licence
+ISC © Mauricio
