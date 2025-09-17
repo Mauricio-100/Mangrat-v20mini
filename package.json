@@ -1,6 +1,6 @@
 {
   "name": "@mauriciotukss2/mangrat-v2omini",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Un Méta-SDK pour interagir avec plusieurs fournisseurs d'IA via une interface unifiée.",
   "main": "index.js",
   "type": "module",
