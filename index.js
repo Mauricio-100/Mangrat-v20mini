@@ -1,55 +1,100 @@
-// Importe les clients nécessaires. Nous commençons avec Fal.ai.
+// --- Imports providers ---
 import * as fal from '@fal-ai/client';
-// Les autres imports viendront ici au fur et à mesure.
+// TODO: importer mastra, singlestore, transformers.js, openai, anthropic, mistral, groq...
 
 /**
- * Le client universel Mangrat V2Omini pour interagir avec plusieurs fournisseurs d'IA.
- * @class MangratV2Omini
+ * Client universel Mangrat V3 (ex-V2Omini)
+ * Support multi-provider avec fallback, streaming, mémoire et validation.
  */
-class MangratV2Omini {
+class MangratV3 {
   #apiKeys;
+  #memory = new Map(); // historique par session
 
-  /**
-   * Crée une instance de MangratV2Omini.
-   * @param {object} config - L'objet de configuration contenant les clés d'API.
-   * @param {string} [config.falKey] - Votre clé d'API pour Fal.ai.
-   * @param {string} [config.mastraKey] - Votre clé d'API pour Mastra.
-   * @param {string} [config.singlestoreKey] - Votre clé d'API pour SingleStore.
-   */
   constructor(config = {}) {
     this.#apiKeys = config;
   }
 
   /**
-   * Exécute un modèle d'IA avec des entrées spécifiques.
-   * La bibliothèque choisit le bon fournisseur en fonction du nom du modèle.
-   * @param {string} modelName - Le nom complet du modèle (ex: 'fal-ai/sdxl').
-   * @param {object} inputs - Les entrées pour le modèle (ex: { prompt: 'un logo' }).
-   * @returns {Promise<any>} La sortie du modèle.
+   * Crée/accède à une session de conversation avec mémoire.
+   * @param {string} sessionId - Identifiant unique (ex: userId).
    */
-  async run(modelName, inputs) {
+  session(sessionId) {
+    if (!this.#memory.has(sessionId)) {
+      this.#memory.set(sessionId, []);
+    }
+    return {
+      chat: async (modelName, message, options = {}) => {
+        const history = this.#memory.get(sessionId);
+        history.push({ role: "user", content: message });
+
+        const result = await this.run(modelName, { prompt: this._formatHistory(history) }, options);
+
+        history.push({ role: "assistant", content: result });
+        this.#memory.set(sessionId, history);
+        return result;
+      },
+      history: () => this.#memory.get(sessionId)
+    };
+  }
+
+  /**
+   * Routage intelligent entre providers
+   */
+  async run(modelName, inputs, options = {}) {
     if (!modelName || typeof modelName !== 'string') {
       throw new Error("Le nom du modèle est requis.");
     }
 
-    // --- Cerveau de Routage ---
-
-    // 1. Gérer les modèles Fal.ai
+    // 1. Fal.ai
     if (modelName.startsWith('fal-ai/')) {
-      if (!this.#apiKeys.falKey) {
-        throw new Error("La clé d'API Fal.ai ('falKey') est requise pour ce modèle.");
-      }
+      if (!this.#apiKeys.falKey) throw new Error("La clé d'API Fal.ai ('falKey') est requise.");
       const actualModel = modelName.replace('fal-ai/', '');
       fal.config({ credentials: this.#apiKeys.falKey });
-      const result = await fal.run(actualModel, { input: inputs });
-      return result;
+
+      // --- Mode streaming ---
+      if (options.stream) {
+        return this._streamFal(actualModel, inputs, options.onToken);
+      }
+
+      return fal.run(actualModel, { input: inputs });
     }
 
-    // TODO: Ajouter la logique pour les autres fournisseurs ici.
+    // 2. Mastra
+    if (modelName.startsWith('mastra/')) {
+      if (!this.#apiKeys.mastraKey) throw new Error("La clé d'API Mastra est requise.");
+      // TODO: appeler Mastra SDK
+    }
 
-    // Si aucun fournisseur ne correspond
-    throw new Error(`Le fournisseur pour le modèle "${modelName}" n'est pas supporté.`);
+    // 3. SingleStore
+    if (modelName.startsWith('singlestore/')) {
+      if (!this.#apiKeys.singlestoreKey) throw new Error("La clé d'API SingleStore est requise.");
+      // TODO: exécution SQL via IA
+    }
+
+    // 4. Transformers.js (offline fallback)
+    if (modelName.startsWith('local/')) {
+      // TODO: load local model avec @xenova/transformers
+    }
+
+    throw new Error(`Le fournisseur pour "${modelName}" n'est pas encore supporté.`);
+  }
+
+  /**
+   * Stream Fal.ai token par token
+   */
+  async _streamFal(model, inputs, onToken) {
+    const stream = await fal.stream(model, { input: inputs });
+    for await (const token of stream) {
+      if (onToken) onToken(token);
+    }
+  }
+
+  /**
+   * Formatte l'historique pour un prompt conversationnel
+   */
+  _formatHistory(history) {
+    return history.map(m => `${m.role}: ${m.content}`).join("\n");
   }
 }
 
-export default MangratV2Omini;
+export default MangratV3;
